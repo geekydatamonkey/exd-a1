@@ -1,13 +1,24 @@
 // sketch.js
+/*jshint newcap: false */
 
 'use strict';
 let p5 = require('p5');
+let Particle = require('./particle');
 
-let myp5 = new p5(function( sketch ) {
+let Sketch = new p5(function( sketch ) {
+
+  let config = {
+    parentClass: 'canvas-wrapper',
+    canvas: {
+      width: 710,
+      height: 200
+    },
+    totalCars: 10
+  };
+
   sketch.setup = function() {
-    let cnv = sketch.createCanvas(500, 500);
-    sketch.colorMode(sketch.HSB, 360, 100, 100);
-    sketch.noStroke();
+    let canvasParent = document.getElementsByClassName(config.parentClass)[0];
+    sketch.createCanvas(config.canvas.width, config.canvas.height).parent(canvasParent);
   };
 
   sketch.draw = function() {
@@ -16,3 +27,5 @@ let myp5 = new p5(function( sketch ) {
    sketch.rect(0, 0, sketch.width, sketch.height);
   };
 });
+
+module.exports = Sketch;
