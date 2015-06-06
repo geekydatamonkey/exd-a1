@@ -1,2 +1,2 @@
 /* jshint devel:true */
-var cars = require('./cars.js');
+var Particle = require('./particle.js');
