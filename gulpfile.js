@@ -8,6 +8,12 @@ var reload = browserSync.reload;
 var karma = require('karma').server;
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
+var babelify = require('babelify');
+var watchify = require('watchify'); // for faster browserify builds
+var assign = require('lodash.assign');
+var gutil = require('gulp-util');
+var sourcemaps = require('gulp-sourcemaps');
 
 gulp.task('styles', function () {
   return gulp.src('app/styles/main.scss')
@@ -78,14 +84,15 @@ gulp.task('extras', function () {
 
 gulp.task('clean', require('del').bind(null, ['.tmp', 'dist']));
 
-gulp.task('serve', ['styles', 'fonts'], function () {
+gulp.task('serve', ['styles', 'fonts', 'browserify'], function () {
   browserSync({
     notify: false,
     port: 9000,
     server: {
       baseDir: ['.tmp', 'app'],
       routes: {
-        '/bower_components': 'bower_components'
+        '/bower_components': 'bower_components',
+        '/test': 'test'
       }
     }
   });
@@ -95,12 +102,14 @@ gulp.task('serve', ['styles', 'fonts'], function () {
     'app/*.html',
     'app/scripts/**/*.js',
     'app/images/**/*',
-    '.tmp/fonts/**/*'
+    '.tmp/fonts/**/*',
+    '.tmp/scripts/**/*.js'
   ]).on('change', reload);
 
   gulp.watch('app/styles/**/*.scss', ['styles']);
   gulp.watch('app/fonts/**/*', ['fonts']);
   gulp.watch('bower.json', ['wiredep', 'fonts']);
+  gulp.watch('app/scripts/**/*.js', ['jshint']);
 });
 
 // inject bower components
@@ -120,19 +129,43 @@ gulp.task('wiredep', function () {
     .pipe(gulp.dest('app'));
 });
 
-gulp.task('tdd', ['browserify'], function (done) {
+
+// JAVASCRIPT
+/////////////////////////////////
+var customOpts = {
+  entries: ['./app/scripts/main.js'],
+  debug: true
+};
+var opts = assign({}, watchify.args, customOpts);
+var b = watchify(browserify(opts)); 
+
+// add transformations here
+// i.e. b.transform(coffeeify);
+
+gulp.task('browserify', bundle); // so you can run `gulp js` to build the file
+b.on('update', bundle); // on any dep update, runs the bundler
+b.on('log', gutil.log); // output build logs to terminal
+
+function bundle() {
+  return b.bundle()
+    // log errors if they happen
+    .on('error', gutil.log.bind(gutil, 'Browserify Error'))
+    .pipe(source('bundle.js'))
+    // optional, remove if you don't need to buffer file contents
+    .pipe(buffer())
+    // optional, remove if you dont want sourcemaps
+    .pipe(sourcemaps.init({loadMaps: true})) // loads map from browserify file
+       // Add transformation tasks to the pipeline here.
+    .pipe(sourcemaps.write('./.tmp/scripts')) // writes .map file
+    .pipe(gulp.dest('./.tmp/scripts'));
+}
+
+// TESTS
+///////////////////////////////
+gulp.task('tdd', function (done) {
   karma.start({
     configFile: __dirname + '/karma.conf.js'
   }, done);
-});
-
-gulp.task('browserify', function() {
-    return browserify('app/scripts/main.js')
-        .bundle()
-        //Pass desired output filename to vinyl-source-stream
-        .pipe(source('bundle.js'))
-        // Start piping stream to tasks!
-        .pipe(gulp.dest('.tmp/scripts'));
 });
 
 

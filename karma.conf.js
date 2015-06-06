@@ -10,7 +10,8 @@ module.exports = function(config) {
     browsers: ['PhantomJS'],
     reporters: ['mocha'],
     browserify: {
-      debug: true // output source maps
+      debug: true, // output source maps
+      transform: [ 'babelify' ]
     }
   });
 };
