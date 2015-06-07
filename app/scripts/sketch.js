@@ -15,12 +15,24 @@ let config = {
   }
 };
 
+let particleList = [];
+let myParticle; // user controlled
+let paused = false;
+
+function pause() {
+  paused = true;
+}
+
+function play() {
+  paused = false;
+}
+
+function togglePause() {
+  paused = !paused;
+}
+
 function mySketch(s){
   
-  let particleList = [];
-  let myParticle; // user controlled
-  let paused = false;
-
   s.setup = function (){
 
     let $canvasWrapper = $(config.canvasWrapper);
@@ -153,6 +165,21 @@ function mySketch(s){
     return false;
   };
 
+  s.windowResized = function() {
+    let $canvasWrapper = $(config.canvasWrapper);
+
+    let w = $canvasWrapper.innerWidth();
+    let h = $canvasWrapper.height();
+
+    // put in canvasWrapper
+    s.resizeCanvas(w,h-3);
+
+    // set new maxPosition for particles
+    for (var i=0, len = particleList.length; i<len; i++){
+      let p = particleList[i];
+      p.setMaxPosition(w,h);
+    }
+  };
 }
 
 function init() {
@@ -160,5 +187,8 @@ function init() {
 }
 
 module.exports = {
-  init
+  init,
+  pause,
+  play,
+  togglePause
 };
