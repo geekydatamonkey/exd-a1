@@ -137,7 +137,7 @@ var customOpts = {
   debug: true
 };
 var opts = assign({}, watchify.args, customOpts);
-var b = watchify(browserify(opts)); 
+var b = watchify(browserify(opts)).transform(babelify); 
 
 // add transformations here
 // i.e. b.transform(coffeeify);
@@ -155,8 +155,7 @@ function bundle() {
     .pipe(buffer())
     // optional, remove if you dont want sourcemaps
     .pipe(sourcemaps.init({loadMaps: true})) // loads map from browserify file
-       // Add transformation tasks to the pipeline here.
-    .pipe(sourcemaps.write('./.tmp/scripts')) // writes .map file
+    .pipe(sourcemaps.write()) // writes .map file
     .pipe(gulp.dest('./.tmp/scripts'));
 }
 
