@@ -4,8 +4,17 @@
 
 const _  = require('lodash');
 
+/**
+* 2D Particles for simple movement
+* particles are circular objects
+* with a position and velocity
+* @class Particle
+*/
 class Particle {
 
+  /**
+  * Creates a new Particle.
+  **/
   constructor(config) {
 
     let defaults = {
@@ -32,6 +41,9 @@ class Particle {
     this.velocity = config.velocity;
   }
 
+  /**
+  * updates the particle to its next position
+  **/
   update(steps = 1) {
     for (let i = 0; i < steps; i++) {
       this.position.x += this.velocity.dx;
@@ -41,6 +53,9 @@ class Particle {
     return this;
   }
 
+  /**
+  * sets the particles x and y velocities
+  **/
   setVelocity(dx, dy) {
     this.velocity.dx = dx;
     this.velocity.dy = dy;
@@ -51,24 +66,46 @@ class Particle {
   * current position as Array
   * @return Array
   **/
-  getCenter() {
+  getPosition() {
     return [this.position.x, this.position.y];
   }
 
+  /**
+  * Alias for getPosition
+  **/
+  getCenter() {
+    return this.getPosition();
+  }
+
+  /**
+  * Sets the position (center)
+  **/
   setPosition(x,y) {
     this.position.x = x;
     this.position.y = y;
     return this;
   }
 
+  /**
+  * gets this particle's radius
+  **/
   getRadius() {
     return this.radius;
   }
 
+  /**
+  * sets the radius
+  **/ 
   setRadius(r) {
     this.radius = r;
   }
 
+  /**
+  * gets the distance to coordiates
+  * alternately if only one argument (another particle)
+  * is provided, this will return the distance from this
+  * particle's center to the other particle's center
+  **/
   distanceTo(x,y) {
 
     // if x is an object, then another particle
