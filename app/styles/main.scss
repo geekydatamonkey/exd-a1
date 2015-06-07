@@ -1,6 +1,13 @@
 // bower:scss
 // endbower
 
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
 body {
   background: #fafafa;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -28,4 +35,9 @@ body {
   background: #ccc;
   color: #000;
   padding: 0.2em 0;
+}
+
+.canvas-wrapper {
+  border: #eee solid 0.125em;
+  min-height: 300px;
 }

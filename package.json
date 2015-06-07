@@ -45,6 +45,7 @@
     "wiredep": "^2.0.0"
   },
   "dependencies": {
+    "jquery": "^2.1.4",
     "lodash": "^3.9.3",
     "p5": "^0.4.5"
   }

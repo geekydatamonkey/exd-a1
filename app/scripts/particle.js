@@ -164,6 +164,19 @@ class Particle {
     return this.distanceTo(p2) <= this.radius + p2.radius;
   }
 
+  /**
+  * checks for collisions within a list of particles
+  **/
+  checkCollisions(list) {
+    for (let i = 0, len = list.length; i < len; i++) {
+      let otherParticle = list[i];
+      if (this.isCollidingWith(otherParticle)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
 }
 
 module.exports = Particle;

@@ -4,22 +4,19 @@
 'use strict';
 let p5 = require('p5');
 let Particle = require('./particle');
+let _ = require('lodash');
+let $ = require('jquery');
 
 let config = {
-  parentClass: 'canvas-wrapper',
-  canvas: {
-    width: 710,
-    height: 200
-  },
+  canvasWrapper: '.canvas-wrapper',
   totalParticles: 10,
   color: {
-    background: '#ffc',
+    background: '#ffe',
     userParticle: 'blue',
     defaultParticle: '#ccc',
     collision: 'magenta'
   }
 };
-
 
 function mySketch(s){
   
@@ -27,28 +24,32 @@ function mySketch(s){
   let myParticle; // user controlled
   let paused = false;
 
-  Particle.prototype.checkCollisions = function(list) {
-    for (let i = 0, len = list.length; i < len; i++) {
-      let otherParticle = list[i];
-      if (this.isCollidingWith(otherParticle)) {
-        console.log('COLLISION!');
-        //paused = true;
-        return true;
-      }
-    }
-    return false;
-  };
+  /**
+  * decides which color to use for this particle
+  **/
+  Particle.prototype.updateColor = function() {
 
-  Particle.prototype.render = function(){
+    // user particle
     if (this === myParticle) {
       this.color = config.color.userParticle;
-    } else {
-      if (this.checkCollisions(particleList)){
-        this.color = config.color.collision;
-      } else {
-        this.color = config.color.defaultParticle;
-      }
+      return;
     }
+
+    // colliding particle
+    if (this.checkCollisions(particleList)){
+      this.color = config.color.collision;
+      return;
+    } 
+
+    // default particle
+    this.color = config.color.defaultParticle;
+  }
+
+  /**
+  * Augment particles with a render method
+  **/
+  Particle.prototype.render = function(){
+    this.updateColor();
     s.fill(this.color);
     s.stroke(200);
     s.ellipseMode(s.RADIUS);
@@ -56,17 +57,26 @@ function mySketch(s){
   };
 
   s.setup = function (){
-    s.createCanvas(700,200);
+
+    let $canvasWrapper = $(config.canvasWrapper);
+
+    // put in canvasWrapper
+    s.createCanvas(
+      $canvasWrapper.innerWidth(),
+      $canvasWrapper.innerHeight()
+    ).parent($canvasWrapper[0]);
+
     s.background('#ffc');
 
     for (let i=0; i < config.totalParticles; i++) {
       let x = 40*i + 20;
       let y = s.height / 2;
-      console.log(x,y);
       let p = new Particle(x,y);
+
       p.setRadius(10)
-        .setVelocity(1,0)
-        .setMaxPosition(s.width,s.height);
+       .setVelocity(1,0)
+       .setMaxPosition(s.width,s.height);
+      
       particleList.push(p);
     }
     myParticle = particleList[0];
@@ -78,28 +88,67 @@ function mySketch(s){
       let p = particleList[i];
       if (! paused) {
         p.update().render();
-        // console.log(`[${i}]: ${p.position.x}, ${p.position.y}`);
       }
     }  
   };
 
-  s.keyTyped = function() {
+  s.keyPressed = function() {
+    //console.log(`keyCode: ${s.keyCode}, key: ${s.key}`);
+
     let p = myParticle;
-    if (s.key === 'd') {
-      p.accelerate(0.25,0);
+    let unit = 0.25;
+    let keys = {
+      right: ['D', s.RIGHT_ARROW],
+      left: ['A', s.LEFT_ARROW],
+      up: ['W', s.UP_ARROW],
+      down: ['S', s.DOWN_ARROW],
+      stop: ['0'],
+      pause: [' ']
+    };
+
+
+    // checks if key is contained
+    // within given array
+    function keyIsIn(array) {
+      let regexASCII = /[A-Z0-9]/;
+      
+      // if ASCII, use s.key
+      if (s.key.match(regexASCII)) {
+        return _.includes(array,s.key);
+      }
+
+      // otherwise check keyCode
+      return  _.includes(array,s.keyCode);
     }
-    if (s.key === 'a') {
-      p.accelerate(-0.25,0);
+
+    // right
+    if (keyIsIn(keys.right)) {
+      p.accelerate(unit,0);
     }
-    if (s.key === '1') {
-      p.setVelocity(1,0);
+    
+    // left
+    if (keyIsIn(keys.left)) { 
+      p.accelerate(-1 * unit,0);
     }
-    if (s.key === '0') {
+    
+    // up -- origin is top, left, so negative
+    if (keyIsIn(keys.up)) { 
+      p.accelerate(0, -1 *unit); 
+    }
+    
+    // down
+    if (keyIsIn(keys.down)) {
+      p.accelerate(0, unit); 
+    }
+    
+    // stop
+    if (keyIsIn(keys.stop)) {
       p.setVelocity(0,0);
     }
-    if (s.key === ' ') {
-      // pause
-      paused = true;
+    
+    // pause
+    if (keyIsIn(keys.pause)) {
+      paused = true; 
     }
 
     return false;
