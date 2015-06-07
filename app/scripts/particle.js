@@ -4,6 +4,13 @@
 
 const _  = require('lodash');
 
+// a better behaving modulo
+// handles negatives correctly
+function mod(n,m) {
+  return ((n%m)+m)%m;
+}
+
+
 /**
 * 2D Particles for simple movement
 * particles are circular objects
@@ -47,9 +54,10 @@ class Particle {
   * updates the particle to its next position
   **/
   update(steps = 1) {
+
     for (let i = 0; i < steps; i++) {
-      this.position.x = (this.position.x + this.velocity.dx) % this.max.x;
-      this.position.y = (this.position.y + this.velocity.dy) % this.max.y;
+      this.position.x = mod(this.position.x + this.velocity.dx, this.max.x);
+      this.position.y = mod(this.position.y + this.velocity.dy, this.max.y);
     }
 
     return this;
@@ -98,8 +106,8 @@ class Particle {
   * Sets the position (center)
   **/
   setPosition(x,y) {
-    this.position.x = x;
-    this.position.y = y;
+    this.position.x = mod(x,this.max.x);
+    this.position.y = mod(y,this.max.y);
     return this;
   }
 
