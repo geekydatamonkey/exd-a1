@@ -14,7 +14,12 @@ var watchify = require('watchify'); // for faster browserify builds
 var assign = require('lodash.assign');
 var gutil = require('gulp-util');
 var sourcemaps = require('gulp-sourcemaps');
+var secrets = require('./.deploy.json'); // deploy specific secrets
+var rsync = require('rsyncwrapper').rsync;
 
+
+// STYLES
+////////////////////////////////////////
 gulp.task('styles', function () {
   return gulp.src('app/styles/main.scss')
     .pipe($.sourcemaps.init())
@@ -32,6 +37,9 @@ gulp.task('styles', function () {
     .pipe(reload({stream: true}));
 });
 
+
+// JSHINT
+///////////////////////////////////////
 gulp.task('jshint', function () {
   return gulp.src('app/scripts/**/*.js')
     .pipe(reload({stream: true, once: true}))
@@ -40,19 +48,16 @@ gulp.task('jshint', function () {
     .pipe($.if(!browserSync.active, $.jshint.reporter('fail')));
 });
 
-gulp.task('html', ['styles'], function () {
-  var assets = $.useref.assets({searchPath: ['.tmp', 'app', '.']});
-
-  return gulp.src('app/*.html')
-    .pipe(assets)
-    .pipe($.if('*.js', $.uglify()))
-    .pipe($.if('*.css', $.csso()))
-    .pipe(assets.restore())
-    .pipe($.useref())
-    .pipe($.if('*.html', $.minifyHtml({conditionals: true, loose: true})))
-    .pipe(gulp.dest('dist'));
+// TDD with KARMA
+///////////////////////////////
+gulp.task('tdd', function (done) {
+  karma.start({
+    configFile: __dirname + '/karma.conf.js'
+  }, done);
 });
 
+// IMAGE COMPRESSION
+//////////////////////////////////////
 gulp.task('images', function () {
   return gulp.src('app/images/**/*')
     .pipe($.cache($.imagemin({
@@ -65,6 +70,9 @@ gulp.task('images', function () {
     .pipe(gulp.dest('dist/images'));
 });
 
+
+// FONTS
+///////////////////////////////////////
 gulp.task('fonts', function () {
   return gulp.src(require('main-bower-files')({
     filter: '**/*.{eot,svg,ttf,woff,woff2}'
@@ -73,6 +81,9 @@ gulp.task('fonts', function () {
     .pipe(gulp.dest('dist/fonts'));
 });
 
+
+// EXTRAS
+////////////////////////////////////////
 gulp.task('extras', function () {
   return gulp.src([
     'app/*.*',
@@ -82,8 +93,13 @@ gulp.task('extras', function () {
   }).pipe(gulp.dest('dist'));
 });
 
+// CLEAN
+////////////////////////////////////////
 gulp.task('clean', require('del').bind(null, ['.tmp', 'dist']));
 
+
+// WATCH
+////////////////////////////////////////
 gulp.task('serve', ['styles', 'fonts', 'browserify'], function () {
   browserSync({
     notify: false,
@@ -112,7 +128,9 @@ gulp.task('serve', ['styles', 'fonts', 'browserify'], function () {
   gulp.watch('app/scripts/**/*.js', ['jshint']);
 });
 
-// inject bower components
+// WIRE DEPENDENCIES (BOWER)
+// (unnecessary with browserify?)
+/////////////////////////////////////
 gulp.task('wiredep', function () {
   var wiredep = require('wiredep').stream;
 
@@ -130,21 +148,14 @@ gulp.task('wiredep', function () {
 });
 
 
-// JAVASCRIPT
+// BROWSERIFY
 /////////////////////////////////
 var customOpts = {
   entries: ['./app/scripts/main.js'],
   debug: true
 };
 var opts = assign({}, watchify.args, customOpts);
-var b = watchify(browserify(opts)).transform(babelify); 
-
-// add transformations here
-// i.e. b.transform(coffeeify);
-
-gulp.task('browserify', bundle); // so you can run `gulp js` to build the file
-b.on('update', bundle); // on any dep update, runs the bundler
-b.on('log', gutil.log); // output build logs to terminal
+var b = watchify(browserify(opts)).transform(babelify);
 
 function bundle() {
   return b.bundle()
@@ -159,19 +170,78 @@ function bundle() {
     .pipe(gulp.dest('./.tmp/scripts'));
 }
 
-// TESTS
-///////////////////////////////
-gulp.task('tdd', function (done) {
-  karma.start({
-    configFile: __dirname + '/karma.conf.js'
-  }, done);
+
+gulp.task('browserify', bundle); // so you can run `gulp js` to build the file
+b.on('update', bundle); // on any dep update, runs the bundler
+b.on('log', gutil.log); // output build logs to terminal
+
+// BUILD:BROWSERIFY (for going to production)
+////////////////////////////////////////////
+gulp.task('build:browserify', function(){
+  return browserify('app/scripts/main.js')
+    .transform(babelify)
+    .bundle()
+    .on("error", function (err) { console.log("Error : " + err.message); })
+    .pipe(source('bundle.js'))
+    .pipe(buffer())
+    .pipe(sourcemaps.init({loadMaps: true}))
+    .pipe(sourcemaps.write('.'))
+    .pipe(gulp.dest('.tmp/scripts'));
 });
 
 
-gulp.task('build', ['jshint', 'html', 'images', 'fonts', 'extras'], function () {
+// HTML
+///////////////////////////////
+gulp.task('html', ['styles'], function () {
+  var assets = $.useref.assets({searchPath: ['.tmp', 'app', '.']});
+
+  return gulp.src('app/*.html')
+    .pipe(assets)
+    .pipe($.if('*.js', $.uglify()))
+    .pipe($.if('*.css', $.csso()))
+    .pipe(assets.restore())
+    .pipe($.useref())
+    .pipe($.if('*.html', $.minifyHtml({conditionals: true, loose: true})))
+    .pipe(gulp.dest('dist'));
+});
+
+// BUILD:STYLES-SCRIPTS (move .tmp to dist on build)
+////////////////////////////////////////////////////
+gulp.task('build:styles-scripts', ['styles','build:browserify'], function(){
+  return gulp.src('.tmp/**/*')
+          .pipe(gulp.dest('dist'));
+});
+
+
+// BUILD
+//////////////////////////////////////////////
+gulp.task('build', ['jshint', 'build:styles-scripts','html', 'images', 'fonts', 'extras'], function () {
   return gulp.src('dist/**/*').pipe($.size({title: 'build', gzip: true}));
 });
 
+
+// DEPLOY
+//////////////////////////////////////////////
+gulp.task('deploy', function() {
+  return rsync({
+    ssh: true,
+    src: './dist/',
+    dest: secrets.servers.dev.rsyncDest,
+    recursive: true,
+    syncDest: true,
+    args: ['--verbose'],
+  }, function(error, stdout, stderr, cmd) {
+      console.log(stdout);
+      console.log(stderr);
+      if (error) {
+        console.log(error.message);
+      }
+  });
+});
+
+
+// DEFAULT: Build
+/////////////////////////////////////////////
 gulp.task('default', ['clean'], function () {
   gulp.start('build');
 });
