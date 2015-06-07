@@ -72,6 +72,13 @@ class Particle {
     return this;
   }
 
+  getVelocity() {
+    return { 
+      dx: this.velocity.dx,
+      dy: this.velocity.dy 
+    }; 
+  }
+
   setMaxPosition(maxX,maxY) {
     this.max.x = maxX;
     this.max.y = maxY;

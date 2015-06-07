@@ -3,5 +3,7 @@
 
 'use strict';
 
-let Particle = require('./particle');
 let Sketch = require('./sketch');
+let keyboard = require('./keyboard');
+
+keyboard.init();

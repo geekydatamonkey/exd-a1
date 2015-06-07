@@ -18,6 +18,10 @@
     padding: 0.25em;
     border-radius: 0.25em;
   }
+  .key.is-pressed {
+    background-color: #666;
+    color: #fff;
+  }
   .key-name {
     text-transform: uppercase;
   }
@@ -50,7 +54,7 @@
     top: 2 * ($keysize + $keyspacing);
     left: 2 * $row-offset + ($keysize + $keyspacing)
   }
-  .key-space {
+  .key-pause {
     width: 5*$keysize + 4*$keyspacing;
     top: 3 * ($keysize + $keyspacing);
     left: 2 * $row-offset + 3*($keysize + $keyspacing);

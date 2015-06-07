@@ -43,7 +43,6 @@ function mySketch(s){
       };
 
       let p = new Particle(settings);
-      console.log(p);
 
       p.setRadius(10)
        .setVelocity(1,0)
@@ -58,14 +57,40 @@ function mySketch(s){
   };
 
   s.draw = function() {
+
+    // check if paused
+    if (paused) {
+      s.textAlign(s.LEFT);
+      s.textSize(32);
+      s.fill(0);
+      s.text('paused',10, 30);
+      return;
+    }
+
     s.background(config.color.background);
+
     for (let i=0, len = particleList.length; i < len; i++) {
       let p = particleList[i];
-      if (! paused) {
-        p.update(particleList).render(s);
-      }
+      p.update(particleList).render(s);
     }  
+
+    // render stats
+    s.textAlign(s.RIGHT);
+    s.textSize(16);
+    s.noStroke();
+    let v = myParticle.getVelocity();
+
+    // change dy so that up/down correspond to natural
+    // directions rather than canvas' origin
+    if (v.dy !== 0) {
+      v.dy = -1 * v.dy;
+    }
+
+    s.fill('red');
+    s.noStroke(); 
+    s.text(`dx: ${v.dx}, dy: ${v.dy}`, s.width - 10, 30);
   };
+
 
   s.keyPressed = function() {
 
@@ -76,7 +101,7 @@ function mySketch(s){
       left: ['A', s.LEFT_ARROW],
       up: ['W', s.UP_ARROW],
       down: ['S', s.DOWN_ARROW],
-      stop: ['0'],
+      stop: ['X'],
       pause: [' ']
     };
 
@@ -84,7 +109,7 @@ function mySketch(s){
     // checks if key is contained
     // within given array
     function keyIsIn(array) {
-      let regexASCII = /[A-Z0-9]/;
+      let regexASCII = /[A-Z0-9 ]/;
       
       // if ASCII, use s.key
       if (s.key.match(regexASCII)) {
@@ -122,9 +147,9 @@ function mySketch(s){
     
     // pause
     if (keyIsIn(keys.pause)) {
-      paused = true; 
+      paused = !paused; 
     }
-
+    // this prevents key action
     return false;
   };
 
