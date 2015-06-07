@@ -14,8 +14,9 @@ let config = {
   totalParticles: 10,
   color: {
     background: '#ffc',
-    userParticle: 'red',
-    defaultParticle: '#ccc'
+    userParticle: 'blue',
+    defaultParticle: '#ccc',
+    collision: 'magenta'
   }
 };
 
@@ -26,11 +27,27 @@ function mySketch(s){
   let myParticle; // user controlled
   let paused = false;
 
+  Particle.prototype.checkCollisions = function(list) {
+    for (let i = 0, len = list.length; i < len; i++) {
+      let otherParticle = list[i];
+      if (this.isCollidingWith(otherParticle)) {
+        console.log('COLLISION!');
+        //paused = true;
+        return true;
+      }
+    }
+    return false;
+  };
+
   Particle.prototype.render = function(){
     if (this === myParticle) {
       this.color = config.color.userParticle;
     } else {
-      this.color = config.color.defaultParticle;
+      if (this.checkCollisions(particleList)){
+        this.color = config.color.collision;
+      } else {
+        this.color = config.color.defaultParticle;
+      }
     }
     s.fill(this.color);
     s.stroke(200);
@@ -61,7 +78,7 @@ function mySketch(s){
       let p = particleList[i];
       if (! paused) {
         p.update().render();
-        console.log(`[${i}]: ${p.position.x}, ${p.position.y}`);
+        // console.log(`[${i}]: ${p.position.x}, ${p.position.y}`);
       }
     }  
   };
