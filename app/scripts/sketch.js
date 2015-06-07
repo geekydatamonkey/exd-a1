@@ -5,27 +5,90 @@
 let p5 = require('p5');
 let Particle = require('./particle');
 
-let Sketch = new p5(function( sketch ) {
+let config = {
+  parentClass: 'canvas-wrapper',
+  canvas: {
+    width: 710,
+    height: 200
+  },
+  totalParticles: 10,
+  color: {
+    background: '#ffc',
+    userParticle: 'red',
+    defaultParticle: '#ccc'
+  }
+};
 
-  let config = {
-    parentClass: 'canvas-wrapper',
-    canvas: {
-      width: 710,
-      height: 200
-    },
-    totalCars: 10
+
+function mySketch(s){
+  
+  let particleList = [];
+  let myParticle; // user controlled
+  let paused = false;
+
+  Particle.prototype.render = function(){
+    if (this === myParticle) {
+      this.color = config.color.userParticle;
+    } else {
+      this.color = config.color.defaultParticle;
+    }
+    s.fill(this.color);
+    s.stroke(200);
+    s.ellipseMode(s.RADIUS);
+    s.ellipse(this.position.x, this.position.y, this.radius, this.radius);
   };
 
-  sketch.setup = function() {
-    let canvasParent = document.getElementsByClassName(config.parentClass)[0];
-    sketch.createCanvas(config.canvas.width, config.canvas.height).parent(canvasParent);
+  s.setup = function (){
+    s.createCanvas(700,200);
+    s.background('#ffc');
+
+    for (let i=0; i < config.totalParticles; i++) {
+      let x = 40*i + 20;
+      let y = s.height / 2;
+      console.log(x,y);
+      let p = new Particle(x,y);
+      p.setRadius(10)
+        .setVelocity(1,0)
+        .setMaxPosition(s.width,s.height);
+      particleList.push(p);
+    }
+    myParticle = particleList[0];
   };
 
-  sketch.draw = function() {
-   var h = sketch.frameCount % 360;
-   sketch.fill(h, 100, 100);
-   sketch.rect(0, 0, sketch.width, sketch.height);
+  s.draw = function() {
+    s.background(config.color.background);
+    for (let i=0, len = particleList.length; i < len; i++) {
+      let p = particleList[i];
+      if (! paused) {
+        p.update().render();
+        console.log(`[${i}]: ${p.position.x}, ${p.position.y}`);
+      }
+    }  
   };
-});
 
-module.exports = Sketch;
+  s.keyTyped = function() {
+    let p = myParticle;
+    if (s.key === 'd') {
+      p.accelerate(0.25,0);
+    }
+    if (s.key === 'a') {
+      p.accelerate(-0.25,0);
+    }
+    if (s.key === '1') {
+      p.setVelocity(1,0);
+    }
+    if (s.key === '0') {
+      p.setVelocity(0,0);
+    }
+    if (s.key === ' ') {
+      // pause
+      paused = true;
+    }
+
+    return false;
+  };
+
+}
+
+
+module.exports = new p5(mySketch);

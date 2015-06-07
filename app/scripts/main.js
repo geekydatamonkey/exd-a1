@@ -1,3 +1,7 @@
 /* jshint devel:true */
-var Particle = require('./particle.js');
-var Sketch = require('./sketch.js');
+/* jshint -W117 */ // ignore ALL globals -- GASP!
+
+'use strict';
+
+let Particle = require('./particle');
+let Sketch = require('./sketch');

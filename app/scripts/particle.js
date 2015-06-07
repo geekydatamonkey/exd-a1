@@ -20,7 +20,8 @@ class Particle {
     let defaults = {
       position: { x: 0, y: 0},
       radius: 1,
-      velocity: {dx: 0, dy: 0}
+      velocity: {dx: 0, dy: 0},
+      max: {x: 1000, y: 1000}
     };
 
     // assume args are position if given 2 arguments
@@ -30,7 +31,7 @@ class Particle {
           x: arguments[0],
           y: arguments[1]
         }
-      }
+      };
     }
 
     // merge defaults with config object
@@ -39,6 +40,7 @@ class Particle {
     this.position = config.position;
     this.radius = config.radius;
     this.velocity = config.velocity;
+    this.max = config.max;
   }
 
   /**
@@ -46,8 +48,8 @@ class Particle {
   **/
   update(steps = 1) {
     for (let i = 0; i < steps; i++) {
-      this.position.x += this.velocity.dx;
-      this.position.y += this.velocity.dy;
+      this.position.x = (this.position.x + this.velocity.dx) % this.max.x;
+      this.position.y = (this.position.y + this.velocity.dy) % this.max.y;
     }
 
     return this;
@@ -59,6 +61,21 @@ class Particle {
   setVelocity(dx, dy) {
     this.velocity.dx = dx;
     this.velocity.dy = dy;
+    return this;
+  }
+
+  setMaxPosition(maxX,maxY) {
+    this.max.x = maxX;
+    this.max.y = maxY;
+    return this;
+  }
+
+  /**
+  * increases velocity
+  **/
+  accelerate(ddx, ddy) {
+    this.velocity.dx += ddx;
+    this.velocity.dy += ddy;
     return this;
   }
 
@@ -98,6 +115,7 @@ class Particle {
   **/ 
   setRadius(r) {
     this.radius = r;
+    return this;
   }
 
   /**
@@ -134,10 +152,7 @@ class Particle {
     // and the center of p2 must be greater than
     // the radius of this + the radius of p2
     // if it's not colliding
-    let d = this.distanceTo(p2);
-    let r1 = this.getRadius();
-    let r2 = p2.getRadius();
-    //console.log(`${d} <=? ${r1} + ${r2}`);
+    // console.log(`${d} <=? ${r1} + ${r2}`);
     return this.distanceTo(p2) <= this.radius + p2.radius;
   }
 
