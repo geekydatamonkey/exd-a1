@@ -43,6 +43,15 @@ class Particle {
     return this;
   }
 
+  /**
+  * current position as Array
+  * @return Array
+  **/
+  getCoordinates() {
+    return [this.position.x, this.position.y];
+  }
+
+
 }
 
 module.exports = Particle;

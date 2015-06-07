@@ -47,8 +47,5 @@
   "dependencies": {
     "lodash": "^3.9.3",
     "p5": "^0.4.5"
-  },
-  "scripts": {
-    "test": "mocha --compilers js:babel/register"
   }
 }

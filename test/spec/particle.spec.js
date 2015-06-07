@@ -78,6 +78,12 @@
         expect(p2.position).to.deep.equal({x: 0, y: 25});
 
       });
+
+      it('should handle diagonal movements too', function(){
+        p.setVelocity({dx: 3, dy: 4});
+        p.update(5);
+        expect(p.getCoordinates()).to.deep.equal([15,20]);
+      });
     });
 
 
