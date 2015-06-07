@@ -3,7 +3,7 @@
 
 'use strict';
 let p5 = require('p5');
-let Particle = require('./particle');
+let Particle = require('./P5Particle');
 let _ = require('lodash');
 let $ = require('jquery');
 
@@ -11,10 +11,7 @@ let config = {
   canvasWrapper: '.canvas-wrapper',
   totalParticles: 10,
   color: {
-    background: '#ffe',
-    userParticle: 'blue',
-    defaultParticle: '#ccc',
-    collision: 'magenta'
+    background: '#ffe'
   }
 };
 
@@ -23,38 +20,6 @@ function mySketch(s){
   let particleList = [];
   let myParticle; // user controlled
   let paused = false;
-
-  /**
-  * decides which color to use for this particle
-  **/
-  Particle.prototype.updateColor = function() {
-
-    // user particle
-    if (this === myParticle) {
-      this.color = config.color.userParticle;
-      return;
-    }
-
-    // colliding particle
-    if (this.checkCollisions(particleList)){
-      this.color = config.color.collision;
-      return;
-    } 
-
-    // default particle
-    this.color = config.color.defaultParticle;
-  }
-
-  /**
-  * Augment particles with a render method
-  **/
-  Particle.prototype.render = function(){
-    this.updateColor();
-    s.fill(this.color);
-    s.stroke(200);
-    s.ellipseMode(s.RADIUS);
-    s.ellipse(this.position.x, this.position.y, this.radius, this.radius);
-  };
 
   s.setup = function (){
 
@@ -69,9 +34,16 @@ function mySketch(s){
     s.background('#ffc');
 
     for (let i=0; i < config.totalParticles; i++) {
-      let x = 40*i + 20;
-      let y = s.height / 2;
-      let p = new Particle(x,y);
+      let settings = {
+        position: {
+          x: 40*i + 20,
+          y: s.height / 2
+        },
+        sketch: s
+      };
+
+      let p = new Particle(settings);
+      console.log(p);
 
       p.setRadius(10)
        .setVelocity(1,0)
@@ -79,7 +51,10 @@ function mySketch(s){
       
       particleList.push(p);
     }
+
+    // make first particle controllable by user
     myParticle = particleList[0];
+    myParticle.setUserControlled(true);
   };
 
   s.draw = function() {
@@ -87,7 +62,7 @@ function mySketch(s){
     for (let i=0, len = particleList.length; i < len; i++) {
       let p = particleList[i];
       if (! paused) {
-        p.update().render();
+        p.update(particleList).render(s);
       }
     }  
   };
