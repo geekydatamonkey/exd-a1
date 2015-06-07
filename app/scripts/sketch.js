@@ -155,5 +155,10 @@ function mySketch(s){
 
 }
 
+function init() {
+  return new p5(mySketch);
+}
 
-module.exports = new p5(mySketch);
+module.exports = {
+  init
+};

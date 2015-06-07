@@ -1,6 +1,5 @@
 // particle.p5
 
-let p5 = require('p5');
 let Particle = require('./particle');
 
 let config = {
@@ -39,7 +38,7 @@ class P5Particle extends Particle {
     // colliding particle
     if (checkCollisions) {
       if (! particleList) {
-        throw "No Particle List given for collission checking";
+        throw 'No Particle List given for collission checking';
       }
       if (this.checkCollisions(particleList)) {
         this.color = config.color.collision;
@@ -64,7 +63,7 @@ class P5Particle extends Particle {
     s.ellipseMode(s.RADIUS);
     s.ellipse(this.position.x, this.position.y, this.radius, this.radius);
     return this;
-  };
+  }
 
 }
 

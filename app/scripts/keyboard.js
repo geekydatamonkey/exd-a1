@@ -1,6 +1,8 @@
+'use strict';
+
 let $ = require('jquery');
 
-function  setupKeypressHandlers() {
+function setupKeypressHandlers() {
   let keyCodes = {
     up: 87,     // W
     left: 65,   // A
@@ -29,12 +31,12 @@ function  setupKeypressHandlers() {
       }
     }
   });
-};
+}
 
 function init() {
-  console.log('init');
+  console.log('Setting up keyboard for instructions');
   setupKeypressHandlers();
-};
+}
 
 module.exports = {
   init
