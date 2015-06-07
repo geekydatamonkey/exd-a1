@@ -68,7 +68,6 @@ function mySketch(s){
   };
 
   s.keyPressed = function() {
-    //console.log(`keyCode: ${s.keyCode}, key: ${s.key}`);
 
     let p = myParticle;
     let unit = 0.25;
