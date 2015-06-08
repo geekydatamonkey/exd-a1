@@ -7,8 +7,8 @@
   padding:0;
   list-style: none;
   position: relative;
-  width: 3 * $keysize + 2* $keyspacing;
-  height: 2 * $keysize + $keyspacing;
+  width: 30em;
+  height: 15em;
 
   .key {
     position: absolute;
