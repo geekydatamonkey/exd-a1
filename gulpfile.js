@@ -14,7 +14,7 @@ var watchify = require('watchify'); // for faster browserify builds
 var assign = require('lodash.assign');
 var gutil = require('gulp-util');
 var sourcemaps = require('gulp-sourcemaps');
-var secrets = require('./.deploy.json'); // deploy specific secrets
+var deploy = require('./.deploy.json'); // deploy specific secrets
 var rsync = require('rsyncwrapper').rsync;
 
 
@@ -226,7 +226,7 @@ gulp.task('deploy', function() {
   return rsync({
     ssh: true,
     src: './dist/',
-    dest: secrets.servers.dev.rsyncDest,
+    dest: deploy.servers.dev.rsyncDest,
     recursive: true,
     syncDest: true,
     args: ['--verbose'],
