@@ -32,7 +32,7 @@ function togglePause() {
 }
 
 function mySketch(s){
-  
+
   s.setup = function (){
 
     let $canvasWrapper = $(config.canvasWrapper);
@@ -43,7 +43,7 @@ function mySketch(s){
       $canvasWrapper.innerHeight()
     ).parent($canvasWrapper[0]);
 
-    s.background('#ffc');
+    s.background(config.color.background);
 
     for (let i=0; i < config.totalParticles; i++) {
       let settings = {
@@ -84,8 +84,8 @@ function mySketch(s){
     for (let i=0, len = particleList.length; i < len; i++) {
       let p = particleList[i];
       p.update(particleList).render(s);
-    }  
-
+    }
+    
     // render stats
     s.textAlign(s.RIGHT);
     s.textSize(16);

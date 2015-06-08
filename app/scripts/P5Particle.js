@@ -4,9 +4,9 @@ let Particle = require('./particle');
 
 let config = {
   color: {
-    userParticle: 'blue',
-    defaultParticle: '#ccc',
-    collision: 'magenta'
+    userParticle: 'rgba(0, 255, 255, 1)',
+    defaultParticle: 'rgba(200,200,200,0.75)',
+    collision: 'rgba(255,0,255,0.75)'
   }
 };
 
